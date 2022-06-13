@@ -3,7 +3,7 @@ from GeneratePassword import *
 import random, string
 from entropy import PasswordStrength
 
-yrg = random.SystemRandom()
+myrg = random.SystemRandom()
 
 DEBUG2 = False
 
@@ -79,12 +79,12 @@ def strengthen(pw):
     # The length the sequence is limited to be 3 - 7
     user_sequence_length = (random.randint(3, random.randint(3, 7)))
 
-    GenPass.times = (user_sequence_length % 3) + 1
+    GeneratePassword.times = (user_sequence_length % 3) + 1
 
-    GenPass.symbol = gimme_special_symbol()
-    #print("symbol : ", Genpass.symbol)
+    GeneratePassword.symbol = gimme_special_symbol()
+    #print("symbol : ", GeneratePassword.symbol)
     # We now generate the sequence of random numbers
-    GenPass.seq = [random.randint(1, len(user_pass)-1) for i in range(user_sequence_length)]
+    GeneratePassword.seq = [random.randint(1, len(user_pass)-1) for i in range(user_sequence_length)]
     #print("seq =", seq)
 
     num_rules = (random.randint(5, random.randint(5, 8)))
@@ -112,7 +112,7 @@ def strengthen(pw):
     for i in l:
         ends = rules[i](ends)
 
-        if (len(GenPass.seq) != user_sequence_length):
+        if (len(GeneratePassword.seq) != user_sequence_length):
             # print("SEQUENCE HAS BEEN MODIFIED!!!")
             # exit(0)
             pass
@@ -125,3 +125,54 @@ def strengthen(pw):
     ends = Rule18(ends)
     # print(ends)
     return (ends, to_remember)
+
+for length in [5, 7, 10, 12]:
+    #print('\t\tPassword generation of length - '+str(length))
+    for k in [0, 1, 2]:
+        #print('\t\tPasswords of '+(names[k])+' set')
+        if(k == 0):
+            debug2('\n' + ('*' * 75))
+            debug2("\nBASE Password containing only alphabets -- length = " + str(length))
+            debug2('\n' + ('*' * 75))
+        elif(k == 1):
+            debug2('\n' + ('*' * 75))
+            debug2("\nBASE Password containing alphanumeric characters -- length = " + str(length))
+            debug2('\n' + ('*' * 75))
+        else:
+            debug2('\n' + ('*' * 75))
+            debug2("\nBASE Password containing alphanumeric + punctuation characters -- length = " + str(length))
+            debug2('\n' + ('*' * 75))
+
+        ent_sum = 0
+        total = 10
+        for j in range(10):
+            pw = str().join(myrg.choice(charset[k]) for _ in range(length))
+            newpass, hexseq = strengthen(pw)
+            # if(j%100==0):
+            # print(newpass)
+            passy = PasswordStrength()
+            try:
+                ent = passy.calculate_entropy(password=newpass)
+                ent_sum += ent
+            except:
+                ent = "nan"
+                total -= 1
+            base_ent = passy.calculate_entropy(password=pw)
+            debug2("\tBase password -> " + pw + "\n\tBase Entropy -> " + str(
+                base_ent) + '\n\tModified password -> ' + newpass + '\n\tHexCode -> ' + str(
+                hexseq) + '\n\tEntropy -> ' + str(ent))
+            debug2("-" * 75)
+        string = '\t' + names[k] + ' \t\t' + str(length) + '\t\t\t'
+        values2[string] = ent_sum / total
+
+print("\n")
+print("$" * 95)
+print("\n")
+print('\t' + "CLASS" + ' \t\t\t' + "LENGTH" + '\t\t\tENTROPY-Random'+'\t\tENTROPY-Smartpassword\n')
+for k, v in values.items():
+    for x,z in values2.items():
+        if(k==x):
+            print(k + str(v) +'\t'+ str(z))
+print("\n")
+print("$" * 95)
+print('\n')
